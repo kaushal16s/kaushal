@@ -21,7 +21,7 @@ const image = [
 ]
 
 // Placeholder username - user needs to update this
-const LETTERBOXD_USERNAME = "kaushal1619s";
+const LETTERBOXD_USERNAME = "kaushal_s";
 
 function About() {
   const [currentImage, setCurrentImage] = useState(0);
@@ -43,7 +43,7 @@ function About() {
       try {
         setLoading(true);
         // Use proxy in dev to avoid CORS and get real-time data
-        const feedUrl = `/letterboxd-feed/kaushal_s/rss/?t=${new Date().getTime()}`;
+        const feedUrl = `/letterboxd-feed/${LETTERBOXD_USERNAME}/rss/?t=${new Date().getTime()}`;
 
         const response = await fetch(feedUrl);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -59,18 +59,21 @@ function About() {
           const link = item.getElementsByTagName("link")[0]?.textContent || "";
           const pubDate = item.getElementsByTagName("pubDate")[0]?.textContent || "";
 
+          // Extract image from description CDATA
           const imgMatch = description.match(/src="([^"]+)"/);
 
+          // Extract rating from title or description
           let rating = "";
-          const ratingMatch = title.match(/★+/);
+          const ratingMatch = title.match(/[★½]+/);
           if (ratingMatch) {
             rating = ratingMatch[0];
           } else {
-            const descRating = description.match(/★+/);
+            const descRating = description.match(/[★½]+/);
             if (descRating) rating = descRating[0];
           }
 
-          const cleanTitle = title.replace(/★+/g, '').trim();
+          // Clean title: "Movie Name, Year - stars" -> "Movie Name"
+          const cleanTitle = title.split(',')[0].trim();
 
           return {
             title: cleanTitle,
@@ -146,7 +149,7 @@ function About() {
                   I transform complex ideas into high-speed, scalable web products.
                   As an engineering-driven developer, I focus on the entire stack—prioritizing
                   clean architecture, seamless performance, and modern solutions that drive real value.
-                  
+
                 </p>
                 <p>
                   With a foundation in Software Systems and a deep interest in data-driven thinking, I design full-stack solutions that balance performance, structure, and clarity.Beyond writing code, I understand the product lifecycle.
@@ -206,7 +209,7 @@ function About() {
                     </div>
                   </div>
                   <a
-                    href={`https://letterboxd.com/kaushal_s/`}
+                    href={`https://letterboxd.com/${LETTERBOXD_USERNAME}/`}
                     target="_blank"
                     rel="noreferrer"
                     className="p-2 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
@@ -238,7 +241,7 @@ function About() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h4 className="text-white font-medium truncate group-hover/item:text-[#00e054] transition-colors">{movie.title.replace(/ \((\d{4})\)$/, "")}</h4>
+                          <h4 className="text-white font-medium truncate group-hover/item:text-[#00e054] transition-colors">{movie.title}</h4>
                           <div className="flex items-center gap-2 mt-1">
                             <span className="text-[#00e054] text-xs">Watched</span>
                             <span className="text-orange-400 text-sm">{movie.rating}</span>
