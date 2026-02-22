@@ -61,6 +61,33 @@ app.post('/api/comments', async (req, res) => {
     }
 });
 
+// Letterboxd Proxy Route
+app.get('/api/letterboxd/:username', async (req, res) => {
+    const { username } = req.params;
+    const rssUrl = `https://letterboxd.com/${username}/rss/`;
+
+    try {
+        const response = await fetch(rssUrl, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36',
+                'Accept': 'application/xml, text/xml, */*'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error(`Letterboxd returned ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.text();
+        res.set('Content-Type', 'text/xml');
+        res.send(data);
+    } catch (error) {
+        console.error('Error fetching Letterboxd feed:', error);
+        res.status(500).json({ error: 'Failed to fetch Letterboxd feed', details: error.message });
+    }
+});
+
+
 if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
     app.listen(PORT, () => {
         console.log(`Server running on http://localhost:${PORT}`);

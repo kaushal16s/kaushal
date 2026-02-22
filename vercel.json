@@ -3,10 +3,6 @@
     "outputDirectory": "dist",
     "rewrites": [
         {
-            "source": "/letterboxd-feed/:path*",
-            "destination": "https://letterboxd.com/:path*"
-        },
-        {
             "source": "/api/(.*)",
             "destination": "/api/index.js"
         },

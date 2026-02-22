@@ -42,8 +42,8 @@ function About() {
     const fetchMovies = async () => {
       try {
         setLoading(true);
-        // Use proxy in dev to avoid CORS and get real-time data
-        const feedUrl = `/letterboxd-feed/${LETTERBOXD_USERNAME}/rss/?t=${new Date().getTime()}`;
+        // Use backend proxy instead of direct rewrite
+        const feedUrl = `/api/letterboxd/${LETTERBOXD_USERNAME}`;
 
         const response = await fetch(feedUrl);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -51,13 +51,22 @@ function About() {
         const text = await response.text();
         const parser = new DOMParser();
         const xmlDoc = parser.parseFromString(text, "text/xml");
-        const items = xmlDoc.querySelectorAll("item");
+
+        // Check for parsing errors
+        const parserError = xmlDoc.getElementsByTagName("parsererror")[0];
+        if (parserError) {
+          throw new Error("XML Parsing Error");
+        }
+
+        const items = xmlDoc.getElementsByTagName("item");
 
         const parsedMovies = Array.from(items).slice(0, 5).map(item => {
-          const description = item.getElementsByTagName("description")[0]?.textContent || "";
-          const title = item.getElementsByTagName("title")[0]?.textContent || "";
-          const link = item.getElementsByTagName("link")[0]?.textContent || "";
-          const pubDate = item.getElementsByTagName("pubDate")[0]?.textContent || "";
+          const getTagContent = (tagName) => item.getElementsByTagName(tagName)[0]?.textContent || "";
+
+          const description = getTagContent("description");
+          const title = getTagContent("title");
+          const link = getTagContent("link");
+          const pubDate = getTagContent("pubDate");
 
           // Extract image from description CDATA
           const imgMatch = description.match(/src="([^"]+)"/);
